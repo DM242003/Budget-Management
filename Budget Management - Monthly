@@ -1,0 +1,44 @@
+function main() {
+  // Define the campaign name and label name
+  var campaignName = "SE :: Custom :: Appliances :: GE :: MTEQ"; // Replace with your campaign's name
+  var labelName = "420"; // Replace with your label's name
+
+  // Get an iterator for campaigns with the specified name
+  var campaignIterator = AdsApp.campaigns()
+                               .withCondition('Name = "' + campaignName + '"')
+                               .get();
+
+  // Check if a campaign with the specified name exists
+  if (campaignIterator.hasNext()) {
+    var campaign = campaignIterator.next();
+
+    // Get the cost for THIS_MONTH
+    var stats = campaign.getStatsFor('THIS_MONTH');
+    var cost = stats.getCost();
+
+    // Get the iterator for labels with the specified name
+    var labelIterator = campaign.labels()
+                               .withCondition('Name = "' + labelName + '"')
+                               .get();
+
+    // Check if the label exists
+    if (labelIterator.hasNext()) {
+      var label = labelIterator.next();
+      
+      // Assuming the threshold value is in the label's name
+      var threshold = parseFloat(label.getName()); 
+
+      // Check if cost equals the label
+      if (cost >= threshold) {
+        Logger.log('Campaign cost reached threshold, pausing campaign.');
+        campaign.pause();
+      } else {
+        Logger.log('Campaign cost not yet at threshold, continuing.');
+      }
+    } else {
+      Logger.log('Label not found: ' + labelName);
+    }
+  } else {
+    Logger.log('No campaign found with name: ' + campaignName);
+  }
+}
