@@ -1,0 +1,77 @@
+function main() {
+
+  var accounts = AdsManagerApp.accounts().get(); // Get all accounts
+
+  while (accounts.hasNext()) {
+
+    var account = accounts.next();
+
+    AdsManagerApp.select(account);
+
+    Logger.log('Processing account: ' + account.getName());
+ 
+    var campaigns = AdsApp.performanceMaxCampaigns()
+
+                          .withCondition("Status = 'ENABLED'")
+
+                          .withCondition("Name = 'PMax :: Vendor :: Appliances :: GE :: PMC'")
+
+                          .get();
+ 
+    while (campaigns.hasNext()) {
+
+      var campaign = campaigns.next();
+
+      var labelIterator = campaign.labels().get(); // Correctly retrieve the iterator
+
+      var campaignLabel = getCampaignLabel(labelIterator);
+ 
+      if (campaignLabel !== null) {
+
+        var stats = campaign.getStatsFor('THIS_MONTH');
+
+        var spend = stats.getCost();
+
+        Logger.log('Campaign: ' + campaign.getName() + ', Spend: ' + spend + ', Label: ' + campaignLabel);
+ 
+        if (spend >= parseFloat(campaignLabel)) {
+
+          campaign.pause();
+
+          Logger.log('Campaign paused due to reaching label limit.');
+
+        }
+
+      } else {
+
+        Logger.log('No valid label found for campaign: ' + campaign.getName());
+
+      }
+
+    }
+
+  }
+
+}
+ 
+function getCampaignLabel(labelIterator) {
+
+  while (labelIterator.hasNext()) {
+
+    var label = labelIterator.next();
+
+    var labelName = label.getName();
+ 
+    // Assuming label contains the budget value directly
+
+    if (!isNaN(parseFloat(labelName))) {
+
+      return parseFloat(labelName);
+
+    }
+
+  }
+
+  return null; // Return null if no valid label is found
+
+}
