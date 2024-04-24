@@ -22,7 +22,7 @@ function main() {
         Logger.log('Campaign: ' + campaign.getName() + ', Spend: ' + spend + ', Label: ' + campaignLabel);
         
         // Subtract 1 from the label value before comparing with spend, input the number that you want to reduce the label by
-        if (spend >= (parseFloat(campaignLabel) - 2)) {
+        if (spend >= (parseFloat(campaignLabel) - 1)) {
           campaign.pause();
           Logger.log('Campaign paused due to reaching label limit.');
         }
