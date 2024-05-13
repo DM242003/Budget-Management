@@ -1,0 +1,42 @@
+function main() {
+  var campaigns = AdsApp.campaigns()
+    .withCondition("Status = 'ENABLED'")
+    .withCondition("Name = 'SE :: Promo :: Bosch 1700 Kitchen Sales Event Memorial Day :: Appliance :: Bosch'")
+    .get();
+
+  while (campaigns.hasNext()) {
+    var campaign = campaigns.next();
+    processCampaign(campaign);
+  }
+}
+
+function processCampaign(campaign) {
+  var labelIterator = campaign.labels().get(); // Correctly retrieve the iterator
+  var campaignLabel = getCampaignLabel(labelIterator);
+
+  if (campaignLabel !== null) {
+    var stats = campaign.getStatsFor('ALL_TIME');
+    var spend = stats.getCost();
+    Logger.log('Campaign: ' + campaign.getName() + ', Spend: ' + spend + ', Label: ' + campaignLabel);
+
+    // Subtract 1 from the label value before comparing with spend
+    if (spend >= (parseFloat(campaignLabel) - 1)) {
+      campaign.pause();
+      Logger.log('Campaign paused due to reaching label limit.');
+    }
+  } else {
+    Logger.log('No valid label found for campaign: ' + campaign.getName());
+  }
+}
+
+function getCampaignLabel(labelIterator) {
+  while (labelIterator.hasNext()) {
+    var label = labelIterator.next();
+    var labelName = label.getName();
+    // Assuming label contains the budget value directly
+    if (!isNaN(parseFloat(labelName))) {
+      return parseFloat(labelName);
+    }
+  }
+  return null; // Return null if no valid label is found
+}
